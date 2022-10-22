@@ -23,6 +23,19 @@ DISCORD_TOKEN=<asdfadfasdf> cargo run
 ```
 
 
+## Examples
+
+Explicitly specified pichu appreciation channel:
+
+![Spam channel](images/love_pichu_very_much.png)
+
+![Spam channel2](images/love_pichu_more.png)
+
+All other channels:
+
+![Normal channel](images/love_pichu_a_little.png)
+
+
 ## Reference
 
 Serenity discord API: <https://github.com/serenity-rs/serenity>
