@@ -3,35 +3,59 @@ use std::env;
 use serenity::async_trait;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
+use serenity::model::prelude::{ChannelId, EmojiId, ReactionType};
 use serenity::prelude::*;
 
 struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
-    // Set a handler for the `message` event - so that whenever a new message
-    // is received - the closure (or function) passed will be called.
-    //
-    // Event handlers are dispatched through a threadpool, and so multiple
-    // events can be dispatched simultaneously.
     async fn message(&self, ctx: Context, msg: Message) {
-        if msg.content == "!ping" {
-            // Sending a message can fail, due to a network error, an
-            // authentication error, or lack of permissions to post in the
-            // channel, so log to stdout when some error happens, with a
-            // description of it.
-            if let Err(why) = msg.channel_id.say(&ctx.http, "Pong!").await {
-                println!("Error sending message: {:?}", why);
+        // does message contain pichu?
+        // no -> ignore it
+        if !msg.content.to_lowercase().contains("pichu") {
+            return;
+        }
+
+        let many_reacts_channel_ids = [
+            ChannelId(198924507472199680),  // pichu-enthusiasts
+            ChannelId(1033459352373313568), // testing_2
+        ];
+
+        // is this a pichu spam channel?
+        // yes -> react with hearts
+        if many_reacts_channel_ids.contains(&msg.channel_id) {
+            // discord supports unicode reactions
+            let heart_strings = [
+                "❤️", "💘", "💓", "💕", "💖", "💗", "💙", "💚", "💛", "💜", "🖤", "💝", "💞", "💟",
+                "❣️",
+            ];
+            // convert from unicode string to reaction
+            let reactions = heart_strings.map(|x| ReactionType::Unicode(x.to_string()));
+            // apply reactions
+            for heart in reactions {
+                // have to clone because async doesn't like references (?)
+                if let Err(why) = msg.react(&ctx.http, heart.clone()).await {
+                    println!("Could not react with {:?}: {:?}", heart, why);
+                }
             }
+        }
+
+        // react to any message containing "pichu" substring
+        // pichuYAY emote is from from Pichu Fanclub server
+        let pichu = ReactionType::Custom {
+            animated: false,
+            id: EmojiId(308324956373254147),
+            name: Some("pichuYAY".to_string()),
+        };
+        if let Err(why) = msg.react(&ctx.http, pichu).await {
+            println!(
+                "Could not react with pichuYAY: {:?}\nmessage:{:?}",
+                why, msg
+            );
         }
     }
 
-    // Set a handler to be called on the `ready` event. This is called when a
-    // shard is booted, and a READY payload is sent by Discord. This payload
-    // contains data like the current user's guild Ids, current user data,
-    // private channels, and more.
-    //
-    // In this case, just print what the current user's username is.
     async fn ready(&self, _: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
     }
@@ -39,22 +63,20 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 async fn main() {
-    // Configure the client with your Discord bot token in the environment.
+    // get DISCORD_TOKEN from ENV
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
-    // Set gateway intents, which decides what events the bot will be notified about
-    let intents = GatewayIntents::GUILD_MESSAGES
-        | GatewayIntents::DIRECT_MESSAGES
+    let intents = GatewayIntents::DIRECT_MESSAGES
+        | GatewayIntents::GUILD_MESSAGES
         | GatewayIntents::MESSAGE_CONTENT;
 
-    // Create a new instance of the Client, logging in as a bot. This will
-    // automatically prepend your bot token with "Bot ", which is a requirement
-    // by Discord for bot users.
-    let mut client =
-        Client::builder(&token, intents).event_handler(Handler).await.expect("Err creating client");
+    let mut client = Client::builder(&token, intents)
+        .event_handler(Handler)
+        .await
+        .expect("Err creating client");
 
-    // Finally, start a single shard, and start listening to events.
+    // finally, start a single shard, and start listening to events.
     //
-    // Shards will automatically attempt to reconnect, and will perform
+    // shards will automatically attempt to reconnect, and will perform
     // exponential backoff until it reconnects.
     if let Err(why) = client.start().await {
         println!("Client error: {:?}", why);
