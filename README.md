@@ -14,7 +14,8 @@ It's all in Rust.
 5. If you're not part of the secret pichu worship server...
     - add a pichu emoji to your server
     - add this bot to your server
-    - replace the ID of pichu emoji
+    - replace ID of pichu emoji (in `main.rs`)
+    - replace IDs of channels (in `pichu.toml`)
 6. Run the bot:
 
 ```bash
@@ -38,4 +39,5 @@ All other channels:
 
 ## Reference
 
-Serenity discord API: <https://github.com/serenity-rs/serenity>
+Serenity discord API: <https://github.com/serenity-rs/serenity>  
+TOML in Rust: <https://docs.rs/toml/latest/toml/>

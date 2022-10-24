@@ -1,10 +1,18 @@
 use std::env;
+use std::fs;
 
+use serde::Deserialize;
 use serenity::async_trait;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::model::prelude::{ChannelId, EmojiId, ReactionType};
 use serenity::prelude::*;
+
+#[derive(Deserialize)]
+struct Pichu {
+    emojis: Vec<String>,
+    channels: Vec<u64>,
+}
 
 struct Handler;
 
@@ -17,21 +25,27 @@ impl EventHandler for Handler {
             return;
         }
 
-        let many_reacts_channel_ids = [
-            ChannelId(198924507472199680),  // pichu-enthusiasts
-            ChannelId(1033459352373313568), // testing_2
-        ];
+        // read config from file
+        // TODO: do not read file on each message
+        let config_path = "pichu.toml";
+        let config_string = fs::read_to_string(config_path).expect("Could not read the file!");
+        let config_parsed: Pichu = toml::from_str(&config_string).expect("Could not parse toml!");
+        println!("emojis: {:?}", config_parsed.emojis);
+        println!("channels: {:?}", config_parsed.channels);
+
+        let many_reacts_channel_ids: Vec<ChannelId> = config_parsed
+            .channels
+            .into_iter()
+            .map(|x| ChannelId(x))
+            .collect();
 
         // is this a pichu spam channel?
         // yes -> react with hearts
         if many_reacts_channel_ids.contains(&msg.channel_id) {
-            // discord supports unicode reactions
-            let heart_strings = [
-                "❤️", "💘", "💓", "💕", "💖", "💗", "💙", "💚", "💛", "💜", "🖤", "💝", "💞", "💟",
-                "❣️",
-            ];
+            // read reactions from config
+            let heart_strings = config_parsed.emojis.into_iter();
             // convert from unicode string to reaction
-            let reactions = heart_strings.map(|x| ReactionType::Unicode(x.to_string()));
+            let reactions = heart_strings.map(|x| ReactionType::Unicode(x));
             // apply reactions
             for heart in reactions {
                 // have to clone because async doesn't like references (?)
@@ -43,6 +57,7 @@ impl EventHandler for Handler {
 
         // react to any message containing "pichu" substring
         // pichuYAY emote is from from Pichu Fanclub server
+        // TODO: make this configurable
         let pichu = ReactionType::Custom {
             animated: false,
             id: EmojiId(308324956373254147),
@@ -74,10 +89,7 @@ async fn main() {
         .await
         .expect("Err creating client");
 
-    // finally, start a single shard, and start listening to events.
-    //
-    // shards will automatically attempt to reconnect, and will perform
-    // exponential backoff until it reconnects.
+    // start a single shard, and start listening to events.
     if let Err(why) = client.start().await {
         println!("Client error: {:?}", why);
     }
