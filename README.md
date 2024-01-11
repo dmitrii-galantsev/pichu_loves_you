@@ -5,6 +5,13 @@ Minimal bot for liking content that contains pichu!
 It's all in Rust.
 
 
+## How to cross-compile?
+
+```bash
+cargo install cargo-zigbuild
+cargo zigbuild --target x86_64-unknown-linux-musl --release
+```
+
 ## How do I run this ~~dumb~~ cool and epic bot???
 
 1. Create a discord bot here: <https://discord.com/developers/applications>
