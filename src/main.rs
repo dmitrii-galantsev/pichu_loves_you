@@ -5,13 +5,18 @@ use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::model::prelude::{EmojiId, ReactionType};
 use serenity::prelude::*;
+use regex::Regex;
 
 struct Handler;
+
 
 #[async_trait]
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
-        if msg.content.to_lowercase() != "gm" {
+        // see https://regex101.com/r/Egqt9E/1
+        let re = Regex::new(r"(\W|^)gm(\W|$)").unwrap();
+
+        if !re.is_match(&msg.content.to_lowercase()) && !msg.attachments.is_empty() {
             return;
         }
 

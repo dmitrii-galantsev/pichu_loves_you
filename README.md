@@ -9,6 +9,7 @@ It's all in Rust.
 
 ```bash
 cargo install cargo-zigbuild
+rustup target add x86_64-unknown-linux-musl
 cargo zigbuild --target x86_64-unknown-linux-musl --release
 ```
 
