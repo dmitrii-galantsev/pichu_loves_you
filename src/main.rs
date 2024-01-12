@@ -15,7 +15,7 @@ impl EventHandler for Handler {
         // see https://regex101.com/r/Egqt9E/1
         let re = Regex::new(r"(\W|^)gm(\W|$)").unwrap();
 
-        if !re.is_match(&msg.content.to_lowercase()) && !msg.attachments.is_empty() {
+        if !re.is_match(&msg.content.to_lowercase()) {
             return;
         }
 
