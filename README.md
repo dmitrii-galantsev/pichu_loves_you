@@ -1,9 +1,8 @@
 # pichu_loves_you
 
-Minimal bot for liking content that contains pichu!
+Minimal bot for liking content that contains gm!
 
 It's all in Rust.
-
 
 ## How to cross-compile?
 
@@ -23,7 +22,6 @@ cargo zigbuild --target x86_64-unknown-linux-musl --release
     - add a pichu emoji to your server
     - add this bot to your server
     - replace ID of pichu emoji (in `main.rs`)
-    - replace IDs of channels (in `pichu.toml`)
 6. Run the bot:
 
 ```bash
@@ -31,21 +29,11 @@ cargo zigbuild --target x86_64-unknown-linux-musl --release
 DISCORD_TOKEN=<asdfadfasdf> cargo run
 ```
 
-
 ## Examples
 
-Explicitly specified pichu appreciation channel:
-
-![Spam channel](images/love_pichu_very_much.png)
-
-![Spam channel2](images/love_pichu_more.png)
-
-All other channels:
-
-![Normal channel](images/love_pichu_a_little.png)
-
+![GM](images/gm.png)
 
 ## Reference
 
 Serenity discord API: <https://github.com/serenity-rs/serenity>  
-TOML in Rust: <https://docs.rs/toml/latest/toml/>
+Regex: <https://regex101.com/r/Egqt9E/1>
