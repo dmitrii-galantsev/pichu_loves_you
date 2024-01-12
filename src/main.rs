@@ -1,14 +1,13 @@
 use std::env;
 
+use regex::Regex;
 use serenity::async_trait;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::model::prelude::{EmojiId, ReactionType};
 use serenity::prelude::*;
-use regex::Regex;
 
 struct Handler;
-
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -29,10 +28,7 @@ impl EventHandler for Handler {
             name: Some("gm".to_string()),
         };
         if let Err(why) = msg.react(&ctx.http, gm).await {
-            println!(
-                "Could not react with gm: {:?}\nmessage:{:?}",
-                why, msg
-            );
+            println!("Could not react with gm: {:?}\nmessage:{:?}", why, msg);
         }
     }
 
