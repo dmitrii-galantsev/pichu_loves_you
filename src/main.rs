@@ -1,6 +1,8 @@
-use std::env;
+use std::path::Path;
+use std::{env, fs};
 
 use regex::Regex;
+use serde::{Deserialize, Serialize};
 use serenity::async_trait;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
@@ -9,26 +11,42 @@ use serenity::prelude::*;
 
 struct Handler;
 
+#[derive(Debug, Deserialize, Serialize)]
+struct Reaction {
+    string: String,
+    id: u64,
+}
+
 #[async_trait]
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
-        // see https://regex101.com/r/Egqt9E/1
-        let re = Regex::new(r"(\W|^)gm(\W|$)").unwrap();
+        // TODO: do not read the config file on each message
+        // read config file
+        let file_path = Path::new("config.ron");
+        let contents = fs::read_to_string(file_path).expect("Failed to read file");
+        let reactions: Vec<Reaction> = ron::from_str(&contents).unwrap();
 
-        if !re.is_match(&msg.content.to_lowercase()) {
-            return;
-        }
+        for reaction in reactions {
+            // see https://regex101.com/r/Egqt9E/1
+            let re_string = format!("(\\W|^){}(\\W|$)", reaction.string);
+            let re = Regex::new(&re_string).unwrap();
 
-        // react to any message containing "gm" substring
-        // gm emote is from from GM Fanclub server
-        // TODO: make this configurable
-        let gm = ReactionType::Custom {
-            animated: false,
-            id: EmojiId(1195006722675323031),
-            name: Some("gm".to_string()),
-        };
-        if let Err(why) = msg.react(&ctx.http, gm).await {
-            println!("Could not react with gm: {:?}\nmessage:{:?}", why, msg);
+            if !re.is_match(&msg.content.to_lowercase()) {
+                continue;
+            }
+
+            // react to any message containing substring
+            let discord_reaction = ReactionType::Custom {
+                animated: false,
+                id: EmojiId(reaction.id),
+                name: Some(reaction.string.to_string()),
+            };
+            if let Err(why) = msg.react(&ctx.http, discord_reaction).await {
+                println!(
+                    "Could not react with {:?}: {:?}\nmessage:{:?}",
+                    reaction.string, why, msg
+                );
+            }
         }
     }
 
