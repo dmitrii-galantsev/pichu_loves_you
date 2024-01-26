@@ -36,7 +36,7 @@ impl EventHandler for Handler {
         let many_reacts_channel_ids: Vec<ChannelId> = config_parsed
             .channels
             .into_iter()
-            .map(|x| ChannelId(x))
+            .map(ChannelId)
             .collect();
 
         // is this a pichu spam channel?
@@ -45,7 +45,7 @@ impl EventHandler for Handler {
             // read reactions from config
             let heart_strings = config_parsed.emojis.into_iter();
             // convert from unicode string to reaction
-            let reactions = heart_strings.map(|x| ReactionType::Unicode(x));
+            let reactions = heart_strings.map(ReactionType::Unicode);
             // apply reactions
             for heart in reactions {
                 // have to clone because async doesn't like references (?)
@@ -53,21 +53,6 @@ impl EventHandler for Handler {
                     println!("Could not react with {:?}: {:?}", heart, why);
                 }
             }
-        }
-
-        // react to any message containing "pichu" substring
-        // pichuYAY emote is from from Pichu Fanclub server
-        // TODO: make this configurable
-        let pichu = ReactionType::Custom {
-            animated: false,
-            id: EmojiId(308324956373254147),
-            name: Some("pichuYAY".to_string()),
-        };
-        if let Err(why) = msg.react(&ctx.http, pichu).await {
-            println!(
-                "Could not react with pichuYAY: {:?}\nmessage:{:?}",
-                why, msg
-            );
         }
     }
 
